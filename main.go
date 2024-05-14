@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -18,9 +20,28 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getAll() {
+func getAll(w http.ResponseWriter, req *http.Request) {
 	db_String := os.Getenv("DB_STRING")
-	resp, err := http.Get(db_String)
+
+	type JsonBody struct {
+		collection string
+		database   string
+		dataSource string
+	}
+
+	bodyJson := JsonBody{
+		collection: "cards",
+		database:   "cards",
+		dataSource: "Cluster0",
+	}
+
+	jsonData, jsonErr := json.Marshal(bodyJson)
+
+	if jsonErr != nil {
+		panic(jsonErr)
+	}
+
+	resp, err := http.Post(db_String, "application/json", bytes.NewBuffer(jsonData))
 
 	if err != nil {
 		panic(err)
